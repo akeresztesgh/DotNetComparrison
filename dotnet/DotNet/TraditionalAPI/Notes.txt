@@ -1,0 +1,5 @@
+﻿
+
+Run Migrations:
+dotnet ef migrations add Initial --project Database --startup-project TraditionalAPI
+dotnet ef database update --project Database --startup-project TraditionalAPI
