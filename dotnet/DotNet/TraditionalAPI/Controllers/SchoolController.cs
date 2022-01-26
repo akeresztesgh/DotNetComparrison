@@ -16,6 +16,12 @@ namespace TraditionalAPI.Controllers
             this.schoolService = schoolService;
         }
 
+        [HttpGet, Route("quick")]
+        public IActionResult Quick()
+        {
+            return Ok("hello world");
+        }
+
         [HttpGet, Route("enrollments")]
         public async Task<IActionResult> GetEnrollmentCount()
         {

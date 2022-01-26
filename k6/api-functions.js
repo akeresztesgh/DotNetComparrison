@@ -1,6 +1,11 @@
 import http from 'k6/http';
 import { settings } from './settings.js'
-import { enrollmentCount, enrollmentResults } from './start.js';
+import { enrollmentCount, enrollmentResults, quickResults } from './start.js';
+
+export function quick() {
+    let res = http.get(`${settings.baseUrl}/api/school/quick`);
+    quickResults.add(res.timings.duration);
+}
 
 export function getEnrollmentCount() {
     let res = http.get(`${settings.baseUrl}/api/school/enrollments`);

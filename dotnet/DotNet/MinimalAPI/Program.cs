@@ -19,6 +19,7 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 
+app.MapGet("/api/school/quick", () => Results.Ok("Hello world"));
 app.MapGet("/api/school/enrollments", async (ISchoolService schoolService) => Results.Ok(await schoolService.GetEnrollmentCount()));
 app.MapGet("/api/school/enrollments/{start}/{count}", async (int start, int count, ISchoolService schoolService) 
     => Results.Ok(await schoolService.GetEnrollments(start, count)));

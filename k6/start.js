@@ -1,7 +1,8 @@
 import { sleep } from 'k6';
-import { getEnrollments, getEnrollmentCount } from './api-functions.js';
+import { getEnrollments, getEnrollmentCount, quick } from './api-functions.js';
 import { Trend } from 'k6/metrics';
 
+export let quickResults = new Trend('quick');
 export let enrollmentCount = new Trend('getEnrollmentCount');
 export let enrollmentResults = new Trend('getEnrollments');
 
@@ -15,7 +16,8 @@ export let options = {
 export default function () {
 
     console.log(`Virtual User ${__VU}:`);
-
+    quick();
+    sleep(1);
     let range = getEnrollmentCount();
     sleep(1);
     getEnrollments(range.start, range.end);
