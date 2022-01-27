@@ -1,4 +1,0 @@
-﻿
-
-Run Migrations:
-dotnet ef database update --project Database --startup-project TraditionalAPI

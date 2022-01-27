@@ -31,16 +31,8 @@ namespace TraditionalAPI.Controllers
         [HttpGet, Route("enrollments/{start}/{count}")]
         public async Task<IActionResult> GetEnrollments(int start, int count)
         {
-            try
-            {
-                var result = await schoolService.GetEnrollments(start, count);
-                return Ok(result);
-
-            }
-            catch(Exception ex)
-            {
-                return BadRequest(ex.Message);
-            }
+            var result = await schoolService.GetEnrollments(start, count);
+            return Ok(result);
         }
     }
 }
