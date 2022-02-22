@@ -11,6 +11,12 @@ builder.Services.AddSwaggerGen();
 var dbString = builder.Configuration.GetConnectionString("SchoolContext");
 builder.Services.AddDbContext<SchoolContext>(options =>
             options.UseSqlServer(dbString));
+
+var dbOptions = new DbContextOptionsBuilder<SchoolContext>()
+        .UseSqlServer(dbString)
+        .Options;
+builder.Services.AddSingleton(ctx => new Func<SchoolContext>(() => new SchoolContext(dbOptions)));
+
 builder.Services.AddScoped<ISchoolService, SchoolService>();
 
 var app = builder.Build();

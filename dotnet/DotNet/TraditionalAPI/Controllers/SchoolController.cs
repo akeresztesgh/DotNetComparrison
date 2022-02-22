@@ -34,5 +34,13 @@ namespace TraditionalAPI.Controllers
             var result = await schoolService.GetEnrollments(start, count);
             return Ok(result);
         }
+
+        [HttpPost, Route("enrollmentsSplit")]
+        public async Task<IActionResult> GetEnrollmentsSplit(List<long> enrollmentIds)
+        {
+            var result = await schoolService.GetEnrollmentsSplit(enrollmentIds);
+            return Ok(result);
+        }
+
     }
 }
