@@ -77,31 +77,31 @@ namespace Database
             return result;
         }
 
-    public async Task<List<Enrollment>> GetEnrollmentsSplit(List<long> enrollmentIds)
-    {
-        var tasks = new List<Task<List<Enrollment>>>();
-        var tsk = (Func<List<long>, Task<List<Enrollment>>>)(async (enrollmentIdsSplit) =>
+        public async Task<List<Enrollment>> GetEnrollmentsSplit(List<long> enrollmentIds)
         {
-            using (var dbc = dbFactory())
+            var tasks = new List<Task<List<Enrollment>>>();
+            var tsk = (Func<List<long>, Task<List<Enrollment>>>)(async (enrollmentIdsSplit) =>
             {
-                var results = await dbc.Enrollments.AsNoTracking()
-                .Include(x => x.Course)
-                .Include(x => x.Student)
-                .Where(x => enrollmentIdsSplit.Contains(x.EnrollmentID))
-                .OrderBy(x => x.EnrollmentID)
-                .ToListAsync();
-                return results;
-            }
-        });
+                using (var dbc = dbFactory())
+                {
+                    var results = await dbc.Enrollments.AsNoTracking()
+                    .Include(x => x.Course)
+                    .Include(x => x.Student)
+                    .Where(x => enrollmentIdsSplit.Contains(x.EnrollmentID))
+                    .OrderBy(x => x.EnrollmentID)
+                    .ToListAsync();
+                    return results;
+                }
+            });
 
-        foreach (var enrollmentIdsSplit in enrollmentIds.Split())
-        {
-            tasks.Add(tsk(enrollmentIdsSplit));
+            foreach (var enrollmentIdsSplit in enrollmentIds.Split())
+            {
+                tasks.Add(tsk(enrollmentIdsSplit));
+            }
+            await Task.WhenAll(tasks);
+            return tasks.SelectMany(x => x.Result).ToList();
         }
-        await Task.WhenAll(tasks);
-        return tasks.SelectMany(x => x.Result).ToList();
     }
-}
 
     public static class ListExtensions
     {
