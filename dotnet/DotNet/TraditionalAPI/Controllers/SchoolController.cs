@@ -36,10 +36,48 @@ namespace TraditionalAPI.Controllers
         }
 
         [HttpPost, Route("enrollmentsSplit")]
-        public async Task<IActionResult> GetEnrollmentsSplit(List<long> enrollmentIds)
+        public async Task<IActionResult> GetEnrollmentsSplit([FromBody] List<long> enrollmentIds)
         {
             var result = await schoolService.GetEnrollmentsSplit(enrollmentIds);
             return Ok(result);
+        }
+
+        private const int MaxPagingSize = 500;
+
+        [HttpPost, Route("v1")]
+        public async Task<IActionResult> GetEnrollmentsV1([FromBody] PagingViewModel paging)
+        {
+            if(paging == null || paging.Count > MaxPagingSize)
+            {
+                return BadRequest();
+            }
+
+            var result = await schoolService.GetEnrollmentsV1(paging);
+            return Ok(result);
+        }
+
+        [HttpPost, Route("v2")]
+        public async Task<IActionResult> GetEnrollmentsV2([FromBody] PagingViewModel paging)
+        {
+            if (paging == null || paging.Count > MaxPagingSize)
+            {
+                return BadRequest();
+            }
+
+            if (string.IsNullOrWhiteSpace(paging.OrderBy))
+            {
+                paging.OrderBy = "enrollmentid";
+            }
+
+            try
+            {
+                var result = await schoolService.GetEnrollmentsV2(paging);
+                return Ok(result);
+            }
+            catch(Exception ex)
+            {
+                return BadRequest(ex.ToString());
+            }
         }
 
     }

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Linq.Dynamic.Core;
 
 namespace Database
 {
@@ -14,6 +15,8 @@ namespace Database
         Task CallFuncOnEnrollment(Func<Enrollment, Task> func);
         Task<List<Enrollment>> GetEnrollments(List<long> enrollmentIds);
         Task<List<Enrollment>> GetEnrollmentsSplit(List<long> enrollmentIds);
+        Task<List<Enrollment>> GetEnrollmentsV1(PagingViewModel model);
+        Task<List<Enrollment>> GetEnrollmentsV2(PagingViewModel model);
     }
 
     public class SchoolService : ISchoolService
@@ -101,6 +104,60 @@ namespace Database
             await Task.WhenAll(tasks);
             return tasks.SelectMany(x => x.Result).ToList();
         }
+
+        public async Task<List<Enrollment>> GetEnrollmentsV1(PagingViewModel model)
+        {
+            var query = db.Enrollments.AsNoTracking()
+                .Include(x => x.Course)
+                .Include(x => x.Student)
+                .OrderBy(x => x.EnrollmentID)
+                .Skip(model.Start)
+                .Take(model.Count);
+            switch(model.OrderBy?.ToLower())
+            {
+                case "courseid":
+                    query = model.IsAscending
+                        ? query.OrderBy(x => x.CourseID)
+                        : query.OrderByDescending(x => x.CourseID);
+                    break;
+                case "studentid":
+                    query = model.IsAscending
+                        ? query.OrderBy(x => x.StudentID)
+                        : query.OrderByDescending(x => x.StudentID);
+                    break;
+                case "coursetitle":
+                    query = model.IsAscending
+                        ? query.OrderBy(x => x.Course.Title)
+                        : query.OrderByDescending(x => x.Course.Title);
+                    break;
+                case "studentlastname":
+                    query = model.IsAscending
+                        ? query.OrderBy(x => x.Student.LastName)
+                        : query.OrderByDescending(x => x.Student.LastName);
+                    break;
+                default:
+                    query = model.IsAscending
+                        ? query.OrderBy(x => x.EnrollmentID)
+                        : query.OrderByDescending(x => x.EnrollmentID);
+                    break;
+            }
+
+            return await query.ToListAsync();
+        }
+
+        public async Task<List<Enrollment>> GetEnrollmentsV2(PagingViewModel model)
+        {
+            var query = db.Enrollments.AsNoTracking()
+                .Include(x => x.Course)
+                .Include(x => x.Student)
+                .OrderBy(x => x.EnrollmentID)
+                .Skip(model.Start)
+                .Take(model.Count);
+
+            query.OrderBy(model.OrderBy + (model.IsAscending ? " ASC" : " DESC"));
+            return await query.ToListAsync();
+        }
+
     }
 
     public static class ListExtensions
