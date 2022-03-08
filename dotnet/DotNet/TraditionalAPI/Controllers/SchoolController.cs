@@ -38,6 +38,7 @@ namespace TraditionalAPI.Controllers
         [HttpPost, Route("enrollmentsSplit")]
         public async Task<IActionResult> GetEnrollmentsSplit([FromBody] List<long> enrollmentIds)
         {
+            //enrollmentIds = Enumerable.Range(10002, 1000).Select(x=> (long)x).ToList();
             var result = await schoolService.GetEnrollmentsSplit(enrollmentIds);
             return Ok(result);
         }

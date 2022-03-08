@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Linq.Dynamic.Core;
+using System.Diagnostics;
 
 namespace Database
 {
@@ -82,27 +83,34 @@ namespace Database
 
         public async Task<List<Enrollment>> GetEnrollmentsSplit(List<long> enrollmentIds)
         {
-            var tasks = new List<Task<List<Enrollment>>>();
-            var tsk = (Func<List<long>, Task<List<Enrollment>>>)(async (enrollmentIdsSplit) =>
-            {
-                using (var dbc = dbFactory())
-                {
-                    var results = await dbc.Enrollments.AsNoTracking()
-                    .Include(x => x.Course)
-                    .Include(x => x.Student)
-                    .Where(x => enrollmentIdsSplit.Contains(x.EnrollmentID))
-                    .OrderBy(x => x.EnrollmentID)
-                    .ToListAsync();
-                    return results;
-                }
-            });
-
+            var sw = Stopwatch.StartNew();
+            var tasks = new List<Task>();           
+            var results = new List<Enrollment>();
             foreach (var enrollmentIdsSplit in enrollmentIds.Split())
             {
-                tasks.Add(tsk(enrollmentIdsSplit));
+                var sw2 = Stopwatch.StartNew();
+                tasks.Add(Task.Run(() =>
+                {
+                    using (var dbc = dbFactory())
+                    {
+                        var firstResult = dbc.Enrollments.AsNoTracking()
+                        .Include(x => x.Course)
+                        .Include(x => x.Student)
+                        .Where(x => enrollmentIdsSplit.Contains(x.EnrollmentID))
+                        .OrderBy(x => x.EnrollmentID)
+                        .ToList();
+                        lock (results)
+                        {
+                            results.AddRange(firstResult);
+                        }
+                    }
+                }));
+                sw2.Stop();
+                Debug.WriteLine($"time: {sw2.ElapsedMilliseconds} ms");
             }
             await Task.WhenAll(tasks);
-            return tasks.SelectMany(x => x.Result).ToList();
+            Debug.WriteLine($"Total time: {sw.ElapsedMilliseconds} ms");
+            return results;
         }
 
         public async Task<List<Enrollment>> GetEnrollmentsV1(PagingViewModel model)
